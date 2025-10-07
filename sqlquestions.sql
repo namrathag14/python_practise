@@ -1,0 +1,94 @@
+
+USE Sales_Co;
+GO
+SELECT name 
+FROM sys.tables;
+SELECT * FROM PRODUCT;
+SELECT * FROM INVOICE;
+SELECT * FROM EMPLOYEE;
+SELECT * FROM VENDOR;
+SELECT * FROM LINE;
+SELECT * FROM EMP;
+
+---join and groupby
+
+USE Sales_Co;
+GO
+
+SELECT 
+    c.CUS_CODE,
+    CONCAT(c.CUS_FNAME, ' ', c.CUS_LNAME) AS Customer_Name,
+    COUNT(i.INV_NUMBER) AS Total_Orders
+FROM dbo.CUSTOMER c
+JOIN dbo.INVOICE i ON c.CUS_CODE = i.CUS_CODE
+GROUP BY c.CUS_CODE, c.CUS_FNAME, c.CUS_LNAME
+ORDER BY Total_Orders DESC;
+
+
+USE Sales_Co;
+GO
+---------------------------------star schema------------------
+USE Sales_Co;
+GO
+
+DROP TABLE IF EXISTS FactSales;
+GO
+
+CREATE TABLE FactSales (
+    INV_NUMBER INT PRIMARY KEY,
+    CUS_CODE INT,
+    P_CODE VARCHAR(10),       
+    EMP_NUM INT,
+    INV_DATE DATE,
+    Quantity INT,
+    Amount DECIMAL(10,2),
+    FOREIGN KEY (CUS_CODE) REFERENCES CUSTOMER(CUS_CODE),
+    FOREIGN KEY (P_CODE) REFERENCES PRODUCT(P_CODE),
+    FOREIGN KEY (EMP_NUM) REFERENCES EMPLOYEE(EMP_NUM)
+);
+GO
+
+USE Sales_Co;
+GO
+
+DROP TABLE IF EXISTS FactSales;
+GO
+
+CREATE TABLE FactSales (
+    INV_NUMBER INT,
+    CUS_CODE INT,
+    P_CODE VARCHAR(10),
+    EMP_NUM INT,
+    INV_DATE DATE,
+    Quantity INT,
+    Amount DECIMAL(10,2),
+    PRIMARY KEY (INV_NUMBER, P_CODE),  
+    FOREIGN KEY (CUS_CODE) REFERENCES CUSTOMER(CUS_CODE),
+    FOREIGN KEY (P_CODE) REFERENCES PRODUCT(P_CODE),
+    FOREIGN KEY (EMP_NUM) REFERENCES EMPLOYEE(EMP_NUM)
+);
+GO
+USE Sales_Co;
+GO
+
+-- Drop the table if it already exists
+IF OBJECT_ID('dbo.FactSales', 'U') IS NOT NULL
+    DROP TABLE dbo.FactSales;
+GO
+
+-- Create the FactSales table with a surrogate primary key
+CREATE TABLE dbo.FactSales (
+    Fact_ID INT IDENTITY(1,1) PRIMARY KEY,   
+    INV_NUMBER INT,
+    CUS_CODE INT,
+    P_CODE VARCHAR(10),
+    EMP_NUM INT,
+    INV_DATE DATE,
+    Quantity INT,
+    Amount DECIMAL(10,2),
+    FOREIGN KEY (CUS_CODE) REFERENCES dbo.CUSTOMER(CUS_CODE),
+    FOREIGN KEY (P_CODE) REFERENCES dbo.PRODUCT(P_CODE),
+    FOREIGN KEY (EMP_NUM) REFERENCES dbo.EMPLOYEE(EMP_NUM)
+);
+GO
+SELECT TOP 10 * FROM dbo.FactSales;
